@@ -42,6 +42,8 @@ svg { display: block; }
 .actions { display: flex; align-items: center; gap: 6px; }
 .edit-tools { display: none; gap: 6px; }
 body.editing .edit-tools { display: inline-flex; }
+/* Botón Editar oculto en la versión pública; aparece al entrar con ?editar */
+body:not(.can-edit) .tb-edit { display: none; }
 
 .tb-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;

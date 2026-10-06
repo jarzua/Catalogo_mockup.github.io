@@ -6,6 +6,9 @@
   let state = JSON.parse(JSON.stringify(ORIGINAL));
   let book = null;
   let editing = false;
+  // La edición solo existe si se entra con ?editar en la dirección (no es seguridad: los
+  // cambios quedan en el navegador de quien edita y solo se publican exportando data.js).
+  const PUEDE_EDITAR = new URLSearchParams(location.search).has("editar");
   let favs = new Set(lsGet("ubre:favs", []));
 
   const $ = (s, el = document) => el.querySelector(s);
@@ -561,6 +564,7 @@
     });
   }
   function toggleEdit() {
+    if (!PUEDE_EDITAR) return;
     editing = !editing;
     document.body.classList.toggle("editing", editing);
     $(".tb-edit").setAttribute("aria-pressed", String(editing));
@@ -604,8 +608,12 @@
   /* ---------- Arranque ---------- */
   async function init() {
     // Si IndexedDB no responde (modo privado, file:// restringido), arrancar con data.js
-    const guardado = await Promise.race([idb.get("estado"), new Promise((r) => setTimeout(r, 1500))]);
-    if (guardado && Array.isArray(guardado.lotes)) state = guardado;
+    // Los borradores locales solo se cargan en modo editor: el público ve siempre data.js
+    if (PUEDE_EDITAR) {
+      document.body.classList.add("can-edit");
+      const guardado = await Promise.race([idb.get("estado"), new Promise((r) => setTimeout(r, 1500))]);
+      if (guardado && Array.isArray(guardado.lotes)) state = guardado;
+    }
 
     const m = location.hash.match(/lote-(\d+)/);
     const idx = m ? state.lotes.findIndex((l) => String(l.lote) === m[1]) : -1;
