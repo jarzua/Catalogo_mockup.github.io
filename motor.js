@@ -119,6 +119,7 @@
     // botón de favorito para una página de ítem
     favBtn: (i, extra = "") => (CFG.favoritos ? `<button class="fav ${favs.has(items()[i]?.id ?? String(i)) ? "is-on" : ""} ${extra}" data-action="fav" data-item="${i}" aria-label="Agregar a favoritos">${ICON.heart}</button>` : ""),
     abrirModal, pedirFoto, irAItem, rebuild, videoInfo,
+    abrirFicha: (i) => abrirFicha(i), abrirVideo: (i) => abrirVideo(i), abrirLista: (f) => abrirDrawer(f),
     cerrarModal: () => $("#modal").close(),
     fichaHTML,
   };
