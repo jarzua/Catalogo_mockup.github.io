@@ -1,0 +1,121 @@
+/* Plantilla: Proyecto Ubre. Solo el diseño de las páginas y los tokens de marca.
+   Medidas en puntos del PDF: calc(var(--u) * N). */
+:root {
+  --acento: #bb9a70;
+  --acento-hi: #dcc39b;
+  --sobre-acento: #1a140c;
+  --ink: #0b0b0a;
+  --panel: #161512;
+  --panel-2: #1f1d19;
+  --line: rgba(187, 154, 112, .28);
+  --text: #f3eee6;
+  --muted: #a7a093;
+  --video: #e0373f;
+  --fuente-ui: "Lexend", system-ui, sans-serif;
+}
+
+.sheet { background: #0d0d0c; color: #fff; font-family: "Lexend", sans-serif; }
+.num { font-family: "Manrope", sans-serif; }
+
+/* Portada */
+.cover .shade { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 40%, rgba(0,0,0,.35)); }
+.cover .logo { position: absolute; left: calc(var(--u) * 392); top: calc(var(--u) * 46); width: calc(var(--u) * 158); }
+.cover .tagline {
+  position: absolute; left: calc(var(--u) * 322); top: calc(var(--u) * 588);
+  padding-left: calc(var(--u) * 24); border-left: calc(var(--u) * 1.2) solid var(--acento);
+  color: var(--acento-hi); font-weight: 300; font-size: calc(var(--u) * 25); line-height: 1.2; letter-spacing: .02em;
+}
+.cover .edicion { position: absolute; left: calc(var(--u) * 346); top: calc(var(--u) * 700); font-size: calc(var(--u) * 17); line-height: 1.15; }
+.cover .edicion b { display: block; font-family: "Manrope", sans-serif; font-weight: 700; font-size: calc(var(--u) * 15); }
+
+/* Página de foto del lote */
+.lote .shade {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, transparent 32%), linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 28%);
+}
+.lote .fav { left: calc(var(--u) * 22); top: calc(var(--u) * 18); --d: 900; }
+.lote-tab {
+  position: absolute; left: calc(var(--u) * 454); top: 0; width: calc(var(--u) * 69); height: calc(var(--u) * 70);
+  border: 0; border-radius: 0 0 calc(var(--u) * 10) calc(var(--u) * 10); background: var(--acento); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05;
+  font-size: calc(var(--u) * 15.4); font-weight: 800; color: #fff; transition: background .2s;
+}
+.lote-tab:hover { background: var(--acento-hi); }
+.lote-tab b { font-family: "Manrope", sans-serif; font-weight: 800; }
+/* anclado abajo: si el nombre ocupa más renglones crece hacia arriba y no pisa la línea */
+.titulo {
+  position: absolute; left: calc(var(--u) * 70); right: calc(var(--u) * 84); bottom: calc(var(--u) * 660);
+  color: var(--acento); text-transform: uppercase; font-weight: 500;
+  font-size: calc(var(--u) * 31.3); line-height: 1.16; letter-spacing: .01em;
+}
+.titulo h2 { margin: 0; font: inherit; }
+.titulo .reg { font-family: "Manrope", sans-serif; font-weight: 700; margin-top: calc(var(--u) * 6); }
+.regla { position: absolute; left: calc(var(--u) * 72); right: 0; top: calc(var(--u) * 195); height: calc(var(--u) * 1.4); background: var(--acento); transform-origin: left; }
+.cat { position: absolute; right: calc(var(--u) * 71); top: calc(var(--u) * 209); font-weight: 300; font-size: calc(var(--u) * 16.5); }
+.stats { position: absolute; left: 0; right: 0; top: calc(var(--u) * 680); display: flex; justify-content: center; gap: calc(var(--u) * 60); }
+.stat { width: calc(var(--u) * 120); display: flex; flex-direction: column; align-items: center; font-size: calc(var(--u) * 14.1); }
+.stat .ico { width: calc(var(--u) * 52); height: calc(var(--u) * 52); border-radius: 50%; background: var(--acento); display: grid; place-items: center; margin-bottom: calc(var(--u) * 6); }
+.stat .ico svg { width: 56%; height: 56%; fill: none; stroke: #fff; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.stat b { font-weight: 700; white-space: nowrap; }
+.stat small { font-size: inherit; font-weight: 300; color: #e9e3d8; }
+
+/* Página de genealogía */
+.gen .h { position: absolute; left: calc(var(--u) * 42); margin: 0; font-weight: 700; font-size: calc(var(--u) * 16.5); letter-spacing: .02em; color: #fff; }
+.datos { position: absolute; left: calc(var(--u) * 22); width: calc(var(--u) * 552); top: calc(var(--u) * 110); color: var(--acento); font-size: calc(var(--u) * 13.1); }
+.datos .row { display: grid; grid-template-columns: 1fr 1fr; border-block: calc(var(--u) * 1) solid var(--line); }
+.datos .row > div { padding: calc(var(--u) * 10) calc(var(--u) * 50); display: flex; gap: calc(var(--u) * 14); align-items: baseline; }
+.datos .row > div + div { border-left: calc(var(--u) * 1) solid var(--line); padding-left: calc(var(--u) * 28); }
+.datos .sexo { margin: 0 auto; width: calc(var(--u) * 274); padding: calc(var(--u) * 10) 0; display: flex; justify-content: center; gap: calc(var(--u) * 14); border-bottom: calc(var(--u) * 1) solid var(--line); }
+.datos b { font-weight: 700; letter-spacing: .04em; }
+.datos span { font-weight: 200; }
+.datos .num { font-weight: 300; }
+
+.lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.lines path { fill: none; stroke: var(--acento); stroke-width: 1; }
+.lines circle { fill: var(--acento); }
+
+.circ {
+  position: absolute; padding: 0; border: 0; cursor: pointer; border-radius: 50%;
+  background: var(--acento); overflow: hidden;
+  box-shadow: 0 0 0 calc(var(--u) * 1.5) color-mix(in srgb, var(--acento) 70%, transparent), 0 calc(var(--u) * 6) calc(var(--u) * 16) rgba(0,0,0,.5);
+  transition: transform .25s, box-shadow .25s;
+}
+.circ img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); }
+.circ:hover { transform: scale(1.08); box-shadow: 0 0 0 calc(var(--u) * 2.5) var(--acento-hi), 0 calc(var(--u) * 8) calc(var(--u) * 22) rgba(0,0,0,.6); }
+.circ.vacio::after { content: ""; position: absolute; inset: 30%; background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-opacity='.45' stroke-width='1.4'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6'/%3E%3C/svg%3E"); }
+body.editing .circ.vacio::after { content: "+ foto"; inset: 0; display: grid; place-items: center; background: none; color: #fff; font-size: calc(var(--u) * 10); }
+.circ.main { box-shadow: 0 0 0 calc(var(--u) * 2) var(--acento), 0 calc(var(--u) * 10) calc(var(--u) * 30) rgba(0,0,0,.6); }
+.circ.main::before { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 calc(var(--u) * 2) rgba(255,255,255,.15); z-index: 1; }
+.main-foto { position: absolute; inset: 0; background-repeat: no-repeat; }
+
+/* Nombres bajo los círculos: 124pt de ancho porque los centros de los abuelos están a 129pt */
+.nm { position: absolute; width: calc(var(--u) * 124); text-align: center; color: var(--acento); line-height: 1.25; }
+.nm b { display: block; font-weight: 600; font-size: calc(var(--u) * 9); text-transform: uppercase; }
+.nm small { display: block; font-weight: 300; font-size: calc(var(--u) * 9.8); color: #d9cdb9; margin-top: calc(var(--u) * 2); }
+.nm.parent small { font-size: calc(var(--u) * 11.7); }
+.nm.main-name { width: calc(var(--u) * 300); font-weight: 500; font-size: calc(var(--u) * 13.6); text-transform: uppercase; line-height: 1.2; }
+
+.video-btn { position: absolute; left: calc(var(--u) * 42); top: calc(var(--u) * 752); display: flex; align-items: center; gap: calc(var(--u) * 6); padding: 0; border: 0; background: none; cursor: pointer; }
+.video-btn .yt { width: calc(var(--u) * 42); height: calc(var(--u) * 42); border: calc(var(--u) * 2) solid var(--video); border-radius: calc(var(--u) * 10); display: grid; place-items: center; }
+.video-btn .yt span { width: calc(var(--u) * 24); height: calc(var(--u) * 17); background: var(--video); border-radius: calc(var(--u) * 5); display: grid; place-items: center; }
+.video-btn .yt span::after { content: ""; border-left: calc(var(--u) * 7) solid #fff; border-block: calc(var(--u) * 4.5) solid transparent; margin-left: calc(var(--u) * 2); }
+.video-btn .pill { background: var(--video); color: #fff; border-radius: 999px; padding: calc(var(--u) * 6) calc(var(--u) * 16); font-size: calc(var(--u) * 9.5); font-weight: 500; transition: filter .2s; }
+.video-btn:hover .pill { filter: brightness(1.12); }
+.gen .logo { position: absolute; left: calc(var(--u) * 481); top: calc(var(--u) * 712); width: calc(var(--u) * 86); }
+
+/* Contraportada */
+.back { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: calc(var(--u) * 26); }
+.back .bg { opacity: .9; }
+.back > *:not(.bg) { position: relative; }
+.back .logo { width: calc(var(--u) * 210); }
+.back h2 { margin: 0; font-weight: 300; font-size: calc(var(--u) * 24); color: var(--acento-hi); }
+.back p { margin: 0; max-width: calc(var(--u) * 380); font-weight: 300; font-size: calc(var(--u) * 13); color: #d9cdb9; white-space: pre-line; }
+
+/* Modal de ancestro (acción propia de esta plantilla) */
+.ancestro { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: center; padding: 28px; }
+.ancestro .big { width: 220px; height: 220px; border-radius: 50%; overflow: hidden; background: var(--acento); box-shadow: 0 0 0 3px var(--acento); }
+.ancestro .big img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); }
+@media (max-width: 760px) {
+  .ancestro { grid-template-columns: 1fr; }
+  .ancestro .big { margin: 0 auto; width: 160px; height: 160px; }
+}
