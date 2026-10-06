@@ -28,7 +28,7 @@
   const HASH = slug(CFG.singular);
   const RATIO = CFG.alto / CFG.ancho;
 
-  const ORIGINAL = JSON.parse(JSON.stringify(window.CATALOGO));
+  let ORIGINAL = JSON.parse(JSON.stringify(window.CATALOGO));
   let state = JSON.parse(JSON.stringify(ORIGINAL));
   let book = null;
   let editing = false;
@@ -313,6 +313,7 @@
       case "copiar": copiarEnlace(i); return;
       case "editar": toggleEdit(); return;
       case "exportar": exportar(); return;
+      case "publicar": abrirPublicar(); return;
       case "imprimir": imprimir(); return;
       case "restablecer": restablecer(); return;
       case "fullscreen": pantallaCompleta(); return;
@@ -526,10 +527,11 @@
     document.body.classList.toggle("editing", editing);
     $(".tb-edit").setAttribute("aria-pressed", String(editing));
     aplicarEdicion();
-    toast(editing ? "Modo edición: escribe sobre los textos o cambia las fotos. Se guarda solo en este navegador; usa Exportar para publicar." : "Modo lectura");
+    toast(editing ? "Modo edición: escribe sobre los textos o cambia las fotos. Se guarda en este navegador; pulsa Publicar para que lo vean los clientes." : "Modo lectura");
   }
+  const dataJS = () => "// Datos del catálogo. Generado desde el modo edición.\nwindow.CATALOGO = " + JSON.stringify(state, null, 2) + ";\n";
   function exportar() {
-    const src = "// Datos del catálogo. Generado desde el modo edición.\nwindow.CATALOGO = " + JSON.stringify(state, null, 2) + ";\n";
+    const src = dataJS();
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
     a.download = "data.js";
@@ -537,6 +539,106 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     toast("Reemplaza data.js del catálogo con el archivo descargado y vuelve a publicar");
   }
+  /* ---------- Publicar en GitHub (sube data.js con la API de contenidos) ----------
+     El token (fine-grained, solo ese repositorio, permiso Contents: Read and write) queda en
+     localStorage de este navegador. El repositorio se detecta desde usuario.github.io/repo/. */
+  const ghKey = (k) => `${CFG.nombre}:gh-${k}`;
+  function repoDetectado() {
+    const guardado = lsGet(ghKey("repo"), null);
+    if (guardado) return guardado;
+    const m = location.hostname.match(/^([\w-]+)\.github\.io$/i);
+    if (!m) return { repo: "", rama: "main", ruta: "data.js" };
+    const seg = location.pathname.split("/").filter(Boolean);
+    // usuario.github.io/<repo>/… → sitio de proyecto; usuario.github.io/… → repositorio "usuario.github.io"
+    const repo = seg.length && !/\.html?$/i.test(seg[0]) ? seg[0] : `${m[1]}.github.io`;
+    return { repo: `${m[1]}/${repo}`, rama: "main", ruta: "data.js" };
+  }
+  function abrirPublicar() {
+    const cfg = repoDetectado();
+    const token = lsGet(ghKey("token"), "");
+    abrirModal(`
+      <div class="modal-pad">
+        <h3>Publicar cambios</h3>
+        <p>Sube el catálogo, con todo lo que editaste, a GitHub. Los clientes lo verán en unos minutos (GitHub tarda entre 1 y 10 en actualizar).</p>
+        <label class="field">Repositorio (usuario/nombre)
+          <input id="gh-repo" type="text" value="${esc(cfg.repo)}" placeholder="usuario/repositorio" autocomplete="off"></label>
+        <label class="field">Rama
+          <input id="gh-rama" type="text" value="${esc(cfg.rama || "main")}" autocomplete="off"></label>
+        <label class="field">Token de GitHub ${token ? "(guardado en este navegador)" : ""}
+          <input id="gh-token" type="password" value="${esc(token)}" placeholder="github_pat_…" autocomplete="off"></label>
+        <details class="nota"><summary>¿Cómo creo el token? (una sola vez)</summary>
+          <ol>
+            <li>Abre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com → Settings → Developer settings → Fine-grained tokens → Generate new token</a>.</li>
+            <li>Nombre: "Catálogo". Vencimiento: el que prefieras (ej. 90 días).</li>
+            <li><b>Repository access</b> → <i>Only select repositories</i> → elige solo este repositorio.</li>
+            <li><b>Permissions → Repository permissions → Contents</b> → <i>Read and write</i>.</li>
+            <li><b>Generate token</b>, cópialo y pégalo arriba.</li>
+          </ol>
+          Queda guardado solo en este navegador. Quien use este navegador podrá publicar: no lo guardes en equipos compartidos.
+        </details>
+        <p id="gh-estado" class="nota" role="status"></p>
+        <div class="btns">
+          <button class="btn primary" id="gh-publicar">Publicar ahora</button>
+          ${token ? `<button class="btn" id="gh-olvidar">Olvidar token</button>` : ""}
+        </div>
+      </div>`);
+    $("#gh-publicar").onclick = () => publicar();
+    const olv = $("#gh-olvidar");
+    if (olv) olv.onclick = () => { try { localStorage.removeItem(ghKey("token")); } catch { /* sin almacenamiento */ } toast("Token borrado de este navegador"); abrirPublicar(); };
+  }
+  function b64utf8(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  async function publicar() {
+    const repo = $("#gh-repo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, "").replace(/\/$/, "");
+    const rama = $("#gh-rama").value.trim() || "main";
+    const token = $("#gh-token").value.trim();
+    const btn = $("#gh-publicar");
+    const decir = (t) => { $("#gh-estado").textContent = t; };
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return decir("Escribe el repositorio como usuario/nombre.");
+    if (!token) return decir("Falta el token (mira «¿Cómo creo el token?»).");
+    const ruta = repoDetectado().ruta || "data.js";
+    lsSet(ghKey("repo"), { repo, rama, ruta });
+    lsSet(ghKey("token"), token);
+    const contenido = dataJS();
+    if (contenido.length > 20e6) return decir("El catálogo pesa más de 20 MB (muchas fotos subidas en edición). Guarda las fotos como archivos en assets/ y vuelve a intentar.");
+    const api = `https://api.github.com/repos/${repo}/contents/${ruta}`;
+    const headers = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+    btn.disabled = true;
+    decir("Conectando con GitHub…");
+    try {
+      // sha de la versión actual: GitHub lo exige para reemplazar el archivo
+      const r0 = await fetch(`${api}?ref=${encodeURIComponent(rama)}`, { headers, cache: "no-store" });
+      if (r0.status === 401) throw new Error("El token no es válido o venció. Crea uno nuevo.");
+      if (r0.status === 403) throw new Error("El token no tiene permiso para este repositorio (Contents: Read and write).");
+      if (r0.status === 404) throw new Error("GitHub no encuentra el repositorio, la rama o data.js. Revisa el nombre (usuario/repositorio) y que el token tenga acceso a ese repositorio.");
+      if (!r0.ok) throw new Error(`GitHub respondió ${r0.status} al leer el catálogo.`);
+      const { sha } = await r0.json();
+      decir("Subiendo cambios…");
+      const fecha = new Date().toLocaleString("es", { dateStyle: "short", timeStyle: "short" });
+      const r1 = await fetch(api, {
+        method: "PUT", headers,
+        body: JSON.stringify({ message: `Actualizo catálogo desde el modo edición (${fecha})`, content: b64utf8(contenido), sha, branch: rama }),
+      });
+      if (r1.status === 401) throw new Error("El token no es válido o venció. Crea uno nuevo.");
+      if (r1.status === 403 || r1.status === 404) throw new Error("GitHub rechazó la publicación: el token necesita acceso a este repositorio con permiso Contents: Read and write.");
+      if (r1.status === 409) throw new Error("El catálogo cambió en GitHub mientras editabas. Vuelve a pulsar Publicar.");
+      if (!r1.ok) throw new Error(`GitHub respondió ${r1.status}: ${(await r1.text()).slice(0, 160)}`);
+      // lo publicado pasa a ser la versión base y se descarta el borrador local
+      ORIGINAL = JSON.parse(JSON.stringify(state));
+      await idb.del("estado");
+      decir("✔ Publicado. Los clientes lo verán en unos minutos (si no, que recarguen la página).");
+      toast("Publicado en GitHub");
+    } catch (e) {
+      decir(e instanceof TypeError ? "Sin conexión con GitHub. Revisa internet e intenta de nuevo." : e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
   async function restablecer() {
     if (!confirm("¿Descartar todos los cambios guardados en este navegador y volver al data.js original?")) return;
     await idb.del("estado");
