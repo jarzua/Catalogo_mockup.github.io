@@ -427,36 +427,59 @@
       </div>`);
   }
 
-  function videoEmbed(url) {
-    const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/))([\w-]{11})/);
-    if (yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
-    const vm = url.match(/vimeo\.com\/(\d+)/);
-    if (vm) return `<iframe src="https://player.vimeo.com/video/${vm[1]}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-    if (/\.(mp4|webm|mov)(\?|$)/i.test(url)) return `<video src="${esc(url)}" controls autoplay playsinline></video>`;
+  // Acepta el enlace del navegador, el de "Compartir", Shorts/Live y el código <iframe> de YouTube.
+  function videoInfo(url) {
+    const yt = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/|v\/))([\w-]{11})/);
+    if (yt) return {
+      tipo: "youtube",
+      embed: `https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0&playsinline=1`,
+      ver: `https://www.youtube.com/watch?v=${yt[1]}`,
+      miniatura: `https://i.ytimg.com/vi/${yt[1]}/hqdefault.jpg`,
+    };
+    const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (vm) return { tipo: "vimeo", embed: `https://player.vimeo.com/video/${vm[1]}?autoplay=1`, ver: `https://vimeo.com/${vm[1]}` };
+    const src = url.match(/src="([^"]+)"/);
+    if (src) return videoInfo(src[1]);
+    if (/\.(mp4|webm|mov)(\?|$)/i.test(url)) return { tipo: "archivo", ver: url };
     return null;
+  }
+
+  function videoReproductor(v) {
+    if (v.tipo === "archivo") return `<video src="${esc(v.ver)}" controls autoplay playsinline></video>`;
+    // YouTube rechaza reproducir dentro de una página abierta como archivo (file://): Error 153.
+    // En ese caso se muestra la miniatura y se abre en YouTube; publicado (http/https) se reproduce aquí.
+    if (location.protocol === "file:") {
+      return `<a class="video-thumb" href="${esc(v.ver)}" target="_blank" rel="noopener">
+        ${v.miniatura ? `<img src="${esc(v.miniatura)}" alt="">` : ""}<span class="play"></span><span class="lbl">Ver en ${v.tipo === "vimeo" ? "Vimeo" : "YouTube"} ↗</span></a>`;
+    }
+    return `<iframe src="${esc(v.embed)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
   }
 
   function abrirVideo(i) {
     const l = state.lotes[i];
     const url = (l.video || "").trim();
-    const embed = url && videoEmbed(url);
+    const v = url && videoInfo(url);
     const editor = editing ? `
-      <label class="field">Enlace del video (YouTube, Vimeo o .mp4)
-        <input id="video-url" type="url" value="${esc(url)}" placeholder="https://youtu.be/…"></label>
+      <label class="field">Enlace del video: pega el enlace de YouTube (navegador o «Compartir»), el código para insertar, Vimeo o un .mp4
+        <input id="video-url" type="text" value="${esc(url)}" placeholder="https://youtu.be/…" autocomplete="off"></label>
       <div class="btns"><button class="btn primary" id="video-save">Guardar enlace</button></div>` : "";
     abrirModal(`
-      ${embed ? `<div class="video-wrap">${embed}</div>` : ""}
+      ${v ? `<div class="video-wrap">${videoReproductor(v)}</div>` : ""}
       <div class="modal-pad">
         <h3>${esc(l.nombre)} ${esc(l.registro)}</h3>
         ${!url ? "<p>El video de este ejemplar estará disponible pronto.</p>" : ""}
-        ${url && !embed ? `<p><a class="btn red" href="${esc(url)}" target="_blank" rel="noopener">Abrir video ↗</a></p>` : ""}
+        ${url && !v ? `<p>No se reconoce este enlace de video.</p><p><a class="btn red" href="${esc(url)}" target="_blank" rel="noopener">Abrir enlace ↗</a></p>` : ""}
+        ${v && v.tipo !== "archivo" ? `<p class="video-alt">¿No carga? <a href="${esc(v.ver)}" target="_blank" rel="noopener">Ábrelo directamente en ${v.tipo === "vimeo" ? "Vimeo" : "YouTube"} ↗</a></p>` : ""}
         ${editor}
       </div>`);
     const save = $("#video-save");
     if (save) save.onclick = () => {
-      setPath(`lotes.${i}.video`, $("#video-url").value.trim());
+      const val = $("#video-url").value.trim();
+      const info = val && videoInfo(val);
+      // Guardar siempre el enlace limpio, aunque hayan pegado el código <iframe>
+      setPath(`lotes.${i}.video`, info && info.tipo !== "archivo" ? info.ver : val);
       $$(`.video-btn[data-lote="${i}"]`).forEach((b) => b.classList.toggle("sin-video", !state.lotes[i].video));
-      toast("Enlace guardado");
+      toast(val && !info ? "Enlace guardado, pero no parece un video de YouTube o Vimeo" : "Enlace guardado");
       abrirVideo(i);
     };
   }

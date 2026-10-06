@@ -315,6 +315,14 @@ body.editing .circ.vacio::after { content: "+ foto"; inset: 0; display: grid; pl
 .field input { height: 38px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--ink); color: var(--text); font: inherit; font-size: 13px; }
 .video-wrap { aspect-ratio: 16 / 9; background: #000; }
 .video-wrap iframe, .video-wrap video { width: 100%; height: 100%; border: 0; display: block; }
+.video-thumb { position: relative; display: block; width: 100%; height: 100%; background: #000; color: #fff; text-decoration: none; }
+.video-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: .75; transition: opacity .2s; }
+.video-thumb:hover img { opacity: .95; }
+.video-thumb .play { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; margin: -27px 0 0 -38px; border-radius: 14px; background: var(--red); }
+.video-thumb .play::after { content: ""; position: absolute; left: 31px; top: 15px; border-left: 20px solid #fff; border-block: 12px solid transparent; }
+.video-thumb .lbl { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; font-size: 14px; font-weight: 500; text-shadow: 0 1px 6px #000; }
+.video-alt { font-size: 13px !important; }
+.video-alt a { color: var(--gold-hi); }
 .modal-pad { padding: 28px 24px; display: grid; gap: 14px; }
 .modal-pad h3 { margin: 0; font-weight: 500; color: var(--gold-hi); }
 .modal-pad p { margin: 0; color: var(--muted); font-size: 14px; }
