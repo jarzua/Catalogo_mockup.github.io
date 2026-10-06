@@ -32,9 +32,13 @@
   let state = JSON.parse(JSON.stringify(ORIGINAL));
   let book = null;
   let editing = false;
-  // La edición solo existe si se entra con ?editar. No es seguridad: los cambios quedan en el
-  // navegador de quien edita y solo se publican exportando data.js.
-  const PUEDE_EDITAR = new URLSearchParams(location.search).has("editar");
+  // La edición solo existe si se entra con ?editar y, por defecto, solo en el PC del editor
+  // (archivo abierto con doble clic, localhost o la red local). En el sitio publicado no se
+  // puede activar salvo que la plantilla declare edicionEnLinea: true (para usar Publicar desde
+  // el enlace público). Los cambios quedan en el navegador de quien edita hasta publicar data.js.
+  const ES_LOCAL = location.protocol === "file:" ||
+    /^(localhost|127(\.\d+){3}|\[::1\]|10(\.\d+){3}|192\.168(\.\d+){2}|172\.(1[6-9]|2\d|3[01])(\.\d+){2})$/.test(location.hostname);
+  const PUEDE_EDITAR = new URLSearchParams(location.search).has("editar") && (ES_LOCAL || P.edicionEnLinea === true);
   let favs = new Set(lsGet(`${CFG.nombre}:favs`, []));
   let paginaDeItem = new Map();   // índice de ítem → primera página donde aparece
   let totalPaginas = 0;
