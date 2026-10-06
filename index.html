@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo Proyecto Ubre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@200;300;400;500;600;700;800&family=Manrope:wght@300;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="toolbar">
+    <div class="brand"><img src="assets/logo.png" alt=""><span>Proyecto Ubre <em>Catálogo 2026</em></span></div>
+
+    <nav class="nav">
+      <button class="tb-btn" data-action="prev" title="Página anterior (←)" aria-label="Página anterior">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="counter" id="counter">Portada</span>
+      <button class="tb-btn" data-action="next" title="Página siguiente (→)" aria-label="Página siguiente">
+        <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </nav>
+
+    <div class="actions">
+      <button class="tb-btn tb-text" data-action="indice"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Lotes</span></button>
+      <button class="tb-btn tb-text" data-action="favoritos" title="Lotes que me interesan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span id="fav-count">0</span></button>
+      <button class="tb-btn" data-action="fullscreen" title="Pantalla completa" aria-label="Pantalla completa"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <span class="edit-tools">
+        <button class="tb-btn tb-text" data-action="exportar" title="Descarga data.js con todos los cambios"><svg viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg><span>Exportar</span></button>
+        <button class="tb-btn tb-text" data-action="imprimir" title="Imprimir o guardar como PDF"><svg viewBox="0 0 24 24"><path d="M7 9V4h10v5M7 17H5v-6h14v6h-2M8 14h8v6H8z"/></svg><span>PDF</span></button>
+        <button class="tb-btn tb-text" data-action="restablecer" title="Descartar cambios guardados en este navegador"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg><span>Restablecer</span></button>
+      </span>
+      <button class="tb-btn tb-text tb-edit" data-action="editar" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg><span>Editar</span></button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <div class="book-frame" id="frame"><div id="book" class="book"></div></div>
+    <p class="hint" id="hint">Arrastra la esquina o usa las flechas para pasar página · Toca los círculos y botones para ver más</p>
+  </main>
+
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>Lotes</h2>
+      <button class="tb-btn" data-action="cerrar-drawer" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <input type="search" id="buscar" placeholder="Buscar por nombre o registro…" autocomplete="off">
+    <div class="chips" id="filtros">
+      <button class="chip is-on" data-filtro="todos">Todos</button>
+      <button class="chip" data-filtro="Hembra">Hembras</button>
+      <button class="chip" data-filtro="Macho">Machos</button>
+      <button class="chip" data-filtro="Rojo">Rojo</button>
+      <button class="chip" data-filtro="Gris">Gris</button>
+      <button class="chip" data-filtro="fav">♥ Me interesan</button>
+    </div>
+    <ul class="lot-list" id="lot-list"></ul>
+    <div class="drawer-foot" id="drawer-foot"></div>
+  </aside>
+  <div class="scrim" id="scrim" data-action="cerrar-drawer"></div>
+
+  <dialog id="modal" class="modal">
+    <button class="modal-x" data-action="cerrar-modal" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div id="modal-body"></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
+  <input type="file" id="file" accept="image/*" hidden>
+  <div id="print-root" class="print-root" aria-hidden="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
